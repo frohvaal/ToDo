@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todos.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todo.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -27,13 +27,13 @@ class ToDo(db.Model): #Create the model of database
 # Route to get all task of ToDo App
 @app.route('/todo', methods=['GET'])
 def get_all_tasks():
-    tasks = ToDo.query.all()
+    tasks = db.session.query(ToDo).all()
     return jsonify([task.to_dict() for task in tasks]), 200
 
 #Route for get a specific To-Do by id
 @app.route('/todo/<int:id>', methods=['GET'])
 def get_task(id):
-    task = ToDo.query.get(id)
+    task = db.session.get(ToDo, id)
     if task is None:
         # If task is not found, return a 404 error
         return abort(404, description="Task not found")
@@ -55,18 +55,19 @@ def create_task():
 #Route for get a To-Do Completed
 @app.route('/todo/<int:id>/complete', methods=['GET'])
 def complete_task(id):
-    task = ToDo.query.get(id)
+    task = db.session.get(ToDo, id)
     if task is None:
         # If task is not found, return a 404 error
         return abort(404, description="Task not found")
     
     task.is_completed = True # Set a task as completed
     db.session.commit() # Save the changes to the database
+    return jsonify({"message": "Task marked as complete"}), 200
 
 # Route for edit a task by id
 @app.route('/todo/<int:id>', methods=['PUT'])
 def update_task(id):
-    task = ToDo.query.get(id)
+    task = db.session.get(ToDo, id)
     data = request.json
 
     if task is None:
@@ -75,7 +76,6 @@ def update_task(id):
 
     task.title = data.get('title', task.title)
     task.description = data.get('description', task.description)    
-    task.date_created = data.get('date_created', task.date_created),
     task.is_completed = data.get('is_completed', task.is_completed)
 
     db.session.commit()
@@ -83,7 +83,7 @@ def update_task(id):
 
 @app.route('/todo/<int:id>', methods=['DELETE'])
 def delete_task(id):
-    task = ToDo.query.get(id)
+    task = db.session.get(ToDo, id)
 
     if task is None:
         # If task is not found, return a 404 error

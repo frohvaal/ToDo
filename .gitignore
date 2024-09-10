@@ -3,3 +3,7 @@ __pycache__/
 
 # Ignore instance directory
 instance/
+
+#Test files
+test_app.py
+test_integration.py

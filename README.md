@@ -40,3 +40,26 @@ Before you begin, ensure you have the following installed on your machine:
 
     ```bash
     git clone https://github.com/frohvaal/ToDo.git
+
+2. **Create a virtual evironment:**
+
+    ```bash
+    python -m venv name-of-environment
+
+3. **Activate the virtual environment:**
+
+    - On Windows:
+
+        ```bash
+        name-of-environment/Scripts/activate
+
+    - On macOS/Linux:
+
+        ```bash
+        source name-of-environment/bin/activate
+
+4. **Install dependencies:**
+
+    ```bash
+    pip install -r requirements.txt
+
