@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort, redirect, url_for
+from flask import Flask, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -35,10 +35,12 @@ def get_all_tasks():
 def get_task(id):
     task = ToDo.query.get(id)
     if task is None:
-        abort(404)  # Si el To-Do no se encuentra, devuelve un error 404
-    return jsonify(task.to_dict()), 200  # Devuelve el To-Do en formato JSON
+        # If task is not found, return a 404 error
+        return abort(404, description="Task not found")
+    
+    return jsonify(task.to_dict()), 200  # Return the task en JSON format
 
-# Ruta para crear un nuevo To-Do
+# Route to create a new task
 @app.route('/todo', methods=['POST'])
 def create_task():
     data = request.json
@@ -48,10 +50,10 @@ def create_task():
     )
     db.session.add(new_task)
     db.session.commit()
-    return jsonify(new_task.to_dict()), 201
+    return jsonify({"message": "Created"}), 201
 
 #Route for get a To-Do Completed
-@app.route('/todo/<int:id>/complete', methods=['POST'])
+@app.route('/todo/<int:id>/complete', methods=['GET'])
 def complete_task(id):
     task = ToDo.query.get(id)
     if task is None:
@@ -60,16 +62,16 @@ def complete_task(id):
     
     task.is_completed = True # Set a task as completed
     db.session.commit() # Save the changes to the database
-    return redirect(url_for('get_tasks')) # Redirect to the task list
 
-# Ruta para editar un To-Do existente por ID
+# Route for edit a task by id
 @app.route('/todo/<int:id>', methods=['PUT'])
 def update_task(id):
     task = ToDo.query.get(id)
     data = request.json
 
-    if not task:
-        return jsonify({"error": "To-Do not found"}), 404
+    if task is None:
+        # If task is not found, return a 404 error
+        return abort(404, description="Task not found")
 
     task.title = data.get('title', task.title)
     task.description = data.get('description', task.description)    
@@ -77,46 +79,19 @@ def update_task(id):
     task.is_completed = data.get('is_completed', task.is_completed)
 
     db.session.commit()
-    return jsonify(task.to_dict())
+    return jsonify({"message": "Ok"}), 200
 
-
-# Ruta para editar un To-Do existente por ID
-# @app.route('/todo/<int:id>', methods=['PATCH'])
-# def update_detail_todo(id):
-#     todo = ToDo.query.get(id)
-#     data = request.json
-
-#     if not todo:
-#         return jsonify({"error": "To-Do not found"}), 404
-
-#     todo.title = data.get('title', todo.title)
-#     todo.description = data.get('description', todo.description)    
-#     todo.is_completed = data.get('is_completed', todo.is_completed)
-
-#     db.session.commit()
-#     return jsonify(todo.to_dict())
-
-# Ruta para eliminar un To-Do existente
 @app.route('/todo/<int:id>', methods=['DELETE'])
 def delete_task(id):
-    todo = ToDo.query.get(id)
+    task = ToDo.query.get(id)
 
-    if not todo:
-        return jsonify({"error": "To-Do not found"}), 404
+    if task is None:
+        # If task is not found, return a 404 error
+        return abort(404, description="Task not found")
 
-    db.session.delete(todo)
+    db.session.delete(task)
     db.session.commit()
-    return jsonify({"message": "To-Do deleted"}), 200
-
-@app.route('/todo', methods=['GET'])
-def get_tasks():
-    tasks = ToDo.query.all()
-    return {
-        "tasks": [
-            {"id": task.id, "title": task.title, "is_completed": task.is_completed}
-            for task in tasks
-        ]
-    }
+    return jsonify({"message": "Ok"}), 200
 
 if __name__ == '__main__':
     with app.app_context():
