@@ -7,3 +7,4 @@ instance/
 #Test files
 test_app.py
 test_integration.py
+tkinter_app.py

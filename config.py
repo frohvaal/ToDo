@@ -3,6 +3,7 @@ class Config:
     TESTING = False
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///todo.db'  # replace with your production DB
+
     # other config variables
 
 class TestingConfig(Config):
