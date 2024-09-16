@@ -37,6 +37,7 @@ def get_all_tasks():
 @app.route('/todo/<int:id>', methods=['GET'])
 def get_task(id):
     task = db.session.get(ToDo, id)
+
     if task is None:
         # If task is not found, return a 404 error
         return abort(404, description="Task not found")
@@ -47,10 +48,12 @@ def get_task(id):
 @app.route('/todo', methods=['POST'])
 def create_task():
     data = request.json
+
     new_task = ToDo(
         title=data.get('title'),
         description=data.get('description'),
     )
+
     db.session.add(new_task)
     db.session.commit()
     return jsonify({"message": "Created"}), 201
@@ -59,13 +62,29 @@ def create_task():
 @app.route('/todo/<int:id>/complete', methods=['GET'])
 def complete_task(id):
     task = db.session.get(ToDo, id)
+
     if task is None:
         # If task is not found, return a 404 error
         return abort(404, description="Task not found")
     
     task.is_completed = True # Set a task as completed
+
     db.session.commit() # Save the changes to the database
     return jsonify({"message": "Task marked as complete"}), 200
+
+#Route for get a To-Do Incompleted
+@app.route('/todo/<int:id>/incomplete', methods=['GET'])
+def incomplete_task(id):
+    task = db.session.get(ToDo, id)
+
+    if task is None:
+        # If task is not found, return a 404 error
+        return abort(404, description="Task not found")
+    
+    task.is_completed = False # Set a task as completed
+
+    db.session.commit() # Save the changes to the database
+    return jsonify({"message": "Task marked as incomplete"}), 200
 
 # Route for edit a task by id
 @app.route('/todo/<int:id>', methods=['PUT'])
